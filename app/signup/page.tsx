@@ -1,56 +1,202 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Button } from "@/components/ui/button"
+import {
+    Field,
+    FieldContent,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+    FieldTitle,
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox"
+import { useActionState, useState } from "react"
+import { Item, ItemContent, ItemTitle } from "@/components/ui/item"
+import { signup } from "@/app/actions/auth"
+import { Spinner } from "@/components/ui/spinner"
 
 export default function SignupPage() {
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [name, setName] = useState('');
-    const [error, setError] = useState('');
-    const router = useRouter();
+    const [state, action, pending] = useActionState(signup, undefined)
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+    const [toggleRole, setToggleRole] = useState("poster")
+    const [toggleBusiness, setToggleBusiness] = useState("individual")
+    const [selectedNiches, setSelectedNiches] = useState<string[]>([])
+    const niches = ["Градежништво", "Домашни работи", "Транспорт", "Дизајн и креативни услуги", "Техничка поддршка", "Настава и обука", "Здравство и нега", "Професионални услуги", "Разно  "];
 
-        const res = await fetch('/api/signup', {
-            method: 'POST',
-            body: JSON.stringify({ name, email, password }),
-            headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (res.ok) {
-            // Refresh the router to update middleware state and redirect
-            router.push('/dashboard');
-            router.refresh();
+    const selectNiche = (niche: string) => {
+        if (selectedNiches.includes(niche) || niche === "") {
+            setSelectedNiches(selectedNiches.filter(n => n !== niche))
         } else {
-            const data = await res.json();
-            setError(data.error || 'Invalid credentials');
+            setSelectedNiches([...selectedNiches, niche])
         }
-    };
+    }
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen">
-            <form onSubmit={handleSubmit} className="p-8 border rounded shadow-md w-96">
-                <h1 className="text-2xl font-bold mb-4">Signup</h1>
-                {error && <p className="text-red-500 mb-4">{error}</p>}
-                <input
-                    type="text" placeholder="Name" className="w-full p-2 mb-4 border"
-                    onChange={(e) => setName(e.target.value)} required
-                />
-                <input
-                    type="email" placeholder="Email" className="w-full p-2 mb-4 border"
-                    onChange={(e) => setEmail(e.target.value)} required
-                />
-                <input
-                    type="password" placeholder="Password" className="w-full p-2 mb-4 border"
-                    onChange={(e) => setPassword(e.target.value)} required
-                />
-                <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
-                    Sign Up
-                </button>
+            <h1 className="text-5xl font-bold pt-10 w-md text-center">Бонус Работа - Креирај Профил</h1>
+            <form action={action} className="w-full max-w-lg pt-15 pb-10">
+                <FieldGroup>
+                    <Field>
+                        <FieldLabel htmlFor="name">Име и Презиме</FieldLabel>
+                        <Input
+                            id="name"
+                            type="text"
+                            placeholder="Внесете име"
+                            name="name"
+                        />
+                        {state?.errors?.name && <FieldError>{state.errors.name}</FieldError>}
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="email">Email</FieldLabel>
+                        <Input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="ivanivanovski@mail.com"
+                        />
+                        {state?.errors?.email && <FieldError>{state.errors.email}</FieldError>}
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="name">Лозинка</FieldLabel>
+                        <Input
+                            id="password"
+                            type="password"
+                            placeholder="Внесете лозинка"
+                            name="password"
+                        />
+                        {state?.errors?.password && <FieldError>{state.errors.password}</FieldError>}
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="phone">Телефон</FieldLabel>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            placeholder="+389 555 111 222"
+                            name="phone"
+                        />
+                        {state?.errors?.phone && <FieldError>{state.errors.phone}</FieldError>}
+                    </Field>
+                    <hr />
+                    <Field>
+                        <FieldLabel htmlFor="business">Тип на бизнис</FieldLabel>
+                        <Select name="business" onValueChange={setToggleBusiness} defaultValue={toggleBusiness}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Одбери тип на бизнис" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="individual">Физичко лице</SelectItem>
+                                    <SelectItem value="small_business">Мал Бизнис</SelectItem>
+                                    <SelectItem value="company">Компанија</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        {state?.errors?.business && <FieldError>{state.errors.business}</FieldError>}
+                    </Field>
+                    {(toggleBusiness === "small_business" || toggleBusiness === "company") && <Field>
+                        <FieldLabel htmlFor="company_name">Име на вашиот бизнис</FieldLabel>
+                        <Input
+                            id="company_name"
+                            name="company_name"
+                            placeholder="Внесете име"
+                            type="text"
+                        />
+                    </Field>}
+                    <Field>
+                        <FieldLabel htmlFor="role">Тип на корисник</FieldLabel>
+                        <RadioGroup 
+                            onValueChange={setToggleRole} 
+                            defaultValue={toggleRole} 
+                            className="w-full"
+                            name="role"
+                        >
+                            <FieldLabel htmlFor="poster-plan">
+                                <Field orientation="horizontal">
+                                    <FieldContent>
+                                        <FieldTitle>Постер</FieldTitle>
+                                        <FieldDescription>
+                                            Доколку сакате да објавувате огласи.
+                                        </FieldDescription>
+                                    </FieldContent>
+                                    <RadioGroupItem value="poster" id="poster-plan" />
+                                </Field>
+                            </FieldLabel>
+                            <FieldLabel htmlFor="tasker-plan">
+                                <Field orientation="horizontal">
+                                    <FieldContent>
+                                        <FieldTitle>Таскер</FieldTitle>
+                                        <FieldDescription>Доколку сакате да работите.</FieldDescription>
+                                    </FieldContent>
+                                    <RadioGroupItem value="tasker" id="tasker-plan" />
+                                </Field>
+                            </FieldLabel>
+                            <FieldLabel htmlFor="both-plan">
+                                <Field orientation="horizontal">
+                                    <FieldContent>
+                                        <FieldTitle>Двете улоги</FieldTitle>
+                                        <FieldDescription>
+                                            Доколку сакате и да објавувате огласи и да работите.
+                                        </FieldDescription>
+                                    </FieldContent>
+                                    <RadioGroupItem value="both" id="both-plan" />
+                                </Field>
+                            </FieldLabel>
+                            {state?.errors?.role && <FieldError>{state.errors.role}</FieldError>}
+                        </RadioGroup>
+                    </Field>
+                    {(toggleRole === "tasker" || toggleRole === "both") && <Field>
+                        <FieldLabel htmlFor="form-address">Ниши</FieldLabel>
+                        <Combobox items={niches} onInputValueChange={selectNiche}>
+                            <ComboboxInput placeholder="Избери минимум две ниши" />
+                            <ComboboxContent>
+                                <ComboboxEmpty>Не се пронајдени ниши.</ComboboxEmpty>
+                                <ComboboxList>
+                                {(item) => (
+                                    <ComboboxItem key={item} value={item}>
+                                    {item}
+                                    </ComboboxItem>
+                                )}
+                                </ComboboxList>
+                            </ComboboxContent>
+                        </Combobox>
+                        {selectedNiches.map(niche => (
+                            <Item variant="outline" key={niche}>
+                                <ItemContent>
+                                    <ItemTitle>{niche}</ItemTitle>
+                                </ItemContent>
+                            </Item>
+                        ))}
+                        {state?.errors?.niches && <FieldError>{state.errors.niches}</FieldError>}
+                        <input type="hidden" name="niches" value={JSON.stringify(selectedNiches)} />
+                    </Field>}
+                    <hr />
+                    <Field orientation="horizontal">
+                        <Button 
+                            type="submit" 
+                            className="w-full cursor-pointer"
+                            disabled={pending}
+                        >
+                            {pending && <>
+                                <Spinner data-icon="inline-start" /> 
+                                <span>Вашиот профил се креира...</span>
+                            </> }
+                            {!pending && <span>Регистрирај се</span>} 
+                        </Button>
+                        {/* {state?.message && <FieldError>{state.message}</FieldError>} */}
+                    </Field>
+                </FieldGroup>
             </form>
         </div>
     );

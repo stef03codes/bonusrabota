@@ -67,11 +67,11 @@ export default function LoginPage() {
               </Button>
             </Link>
           </Field>
-          <Field>
+          {/* <Field>
             <Link href="/privacy-policy" className="text-blue-300 underline">
               Прочитајте ја нашата политика на приватност.
             </Link>
-          </Field>
+          </Field> */}
         </FieldGroup>
       </form>
     </div>

@@ -8,13 +8,13 @@ export default async function Dashboard() {
 
     if (!role) {
         redirect('/login');
-    } else if(role === 'tasker') {
+    } else if(role === 'poster') {
         redirect('/permission-error');
     }
-    
+
     return (
         <main>
-            <h1>Poster Dashboard</h1>
+            <h1>Tasker Dashboard</h1>
             <LogoutButton/>
         </main>
     );

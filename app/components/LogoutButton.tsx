@@ -1,19 +1,26 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useActionState } from 'react';
+import { logout } from '../actions/auth';
+import { Spinner } from '@/components/ui/spinner';
+import { Button } from '@/components/ui/button';
 
 export function LogoutButton() {
-  const router = useRouter();
 
-  const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
-    router.push('/login');
-    router.refresh();
-  };
+  const [state, action, pending] = useActionState(logout, undefined)
 
   return (
-    <button onClick={handleLogout} className="text-red-500 underline">
-      Logout
-    </button>
+    <>
+      <form action={action}>
+        <Button type='submit' disabled={pending} className='cursor-pointer'>
+          {pending && <>
+              <Spinner data-icon="inline-start" /> 
+              <span>Ве одјавуваме...</span>
+            </> }
+            {!pending && <span>Одјави се</span>} 
+        </Button>
+      </form>
+      {/* {state?.errors.message && <p className="text-red-500">{state.errors.message}</p>} */}
+    </>
   );
 }

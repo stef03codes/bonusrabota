@@ -1,7 +1,11 @@
 import * as z from 'zod'
  
-const BusinessEnum = z.enum(['Физичко лице', 'Компанија', 'Мал бизнис'])
-const UserRole = z.enum(['Постер', 'Таскер', 'И двете'])
+const BusinessEnum = z.enum(['individual', 'company', 'small_business'], { 
+  error: 'Типот на бизнис е задолжително поле!' 
+})
+const UserRole = z.enum(['poster', 'tasker', 'both'], {
+  error: 'Типот на корисник е задолжително поле!'
+})
 
 export const LoginFormSchema = z.object({
   email: z.string().trim().min(1, { message: "*Email-от е задолжителен" }),
@@ -23,9 +27,11 @@ export const SignupFormSchema = z.object({
       error: 'И најмалку еден специјален знак.',
     })
     .trim(),
-  tel: z.string().min(9, {error: 'Внесете валиден телфонски број'}),
+  phone: z.string().min(9, {error: 'Внесете валиден телфонски број'}),
   business: BusinessEnum,
-  role: UserRole
+  company_name: z.string().optional(),
+  role: UserRole,
+  niches: z.array(z.string()).min(2, { error: 'Одберете најмалку две ниши.' })
 })
  
 export type LoginFormState =
@@ -44,10 +50,13 @@ export type SignupFormState =
         name?: string[]
         email?: string[]
         password?: string[],
-        tel?: string[],
-        business: string[],
-        role: string[]
+        phone?: string[],
+        business?: string[],
+        role?: string[],
+        niches?: string[],
     }
     message?: string
 }
 | undefined
+
+export type LogoutState = | { errors?: { message: string } } | undefined

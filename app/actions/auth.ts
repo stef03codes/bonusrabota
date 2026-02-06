@@ -3,7 +3,8 @@
 import { LoginFormSchema, LoginFormState, SignupFormSchema, SignupFormState } from '@/lib/definitions'
 import { createSession, deleteSession } from '@/lib/session'
 import { redirect } from 'next/navigation';
-import { getUser, UserSchema } from '@/lib/api/user';
+import { getUser } from '@/lib/api/user';
+import { console } from 'inspector';
 
 export async function login(state: LoginFormState, formData: FormData) {
     const validatedFields = LoginFormSchema.safeParse({
@@ -33,16 +34,14 @@ export async function login(state: LoginFormState, formData: FormData) {
         }
     }
 
-    createSession(data.authToken).then(async () => {
-        const user = UserSchema.parse(await getUser());
-        
-        if(user.role === 'both') {
-            redirect('/welcome');
-        } else {
-            redirect(`/${user.role}/dashboard`);
-        }
-        
-    });
+    await createSession(data.authToken);
+    const user = await getUser(data.authToken);
+
+    if(user.role === 'both') {
+        redirect('/welcome');
+    } else {
+        redirect(`/${user.role}/dashboard`);
+    }
 }
 
 export async function signup(state: SignupFormState, formData: FormData) {
@@ -50,9 +49,10 @@ export async function signup(state: SignupFormState, formData: FormData) {
         name: formData.get('name'),
         email: formData.get('email'),
         password: formData.get('password'),
-        tel: formData.get('tel'),
+        phone: formData.get('phone'),
         business: formData.get('business'),
-        role: formData.get('role')
+        role: formData.get('role'),
+        company_name: formData.get('company_name')
     });
 
     if (!validatedFields.success) {
@@ -61,44 +61,42 @@ export async function signup(state: SignupFormState, formData: FormData) {
         }
     }
 
-    const { name, email, password, tel, business, role } = validatedFields.data;
+    const { name, email, password, phone, business, role, company_name } = validatedFields.data;
 
-    const xanoResponse = await fetch(`${process.env.XANO_BASE_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+    console.log(JSON.stringify({ 
             name, 
             email, 
             password,
-            tel,
+            phone,
             business,
             role
-        }),
-    });
+        }))
 
-    const data = await xanoResponse.json();
+    // const xanoResponse = await fetch(`${process.env.XANO_BASE_URL}/auth/signup`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ 
+    //         name, 
+    //         email, 
+    //         password,
+    //         phone,
+    //         business,
+    //         role
+    //     }),
+    // });
 
-    if (!xanoResponse.ok) {
-        return {
-            message: 'Невалиден email или лозинка!',
-        }
-    }
+    // const data = await xanoResponse.json();
 
-    createSession(data.authToken).then(async () => {
-        const user = UserSchema.parse(await getUser());
-        
-        if(user.role === 'both') {
-            redirect('/welcome');
-        } else {
-            redirect(`/${user.role}/dashboard`);
-        }
-        
-    });
+    // if (!xanoResponse.ok) {
+    //     return {
+    //         message: 'Невалиден email или лозинка!',
+    //     }
+    // }
 
-    // redirect('/dashboard')
+    // await createSession(data.authToken);
 }
 
 export async function logout() {
-    await deleteSession()
-    redirect('/login')
+    await deleteSession();
+    redirect('/login');
 }

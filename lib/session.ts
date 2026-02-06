@@ -13,7 +13,7 @@ export async function createSession(authToken: string) {
 }
 
 export async function updateSession() {
-    const session = (await cookies()).get('session')?.value
+    const session = (await cookies()).get('xano_auth_token')?.value
 
     if (!session) {
         return null
@@ -22,7 +22,7 @@ export async function updateSession() {
     const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
     const cookieStore = await cookies()
-    cookieStore.set('session', session, {
+    cookieStore.set('xano_auth_token', session, {
         httpOnly: true,
         secure: true,
         expires: expires,
@@ -33,5 +33,5 @@ export async function updateSession() {
 
 export async function deleteSession() {
     const cookieStore = await cookies()
-    cookieStore.delete('session')
+    cookieStore.delete('xano_auth_token')
 }
