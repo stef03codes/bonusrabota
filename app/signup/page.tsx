@@ -20,28 +20,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox"
+import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxContent, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxValue, useComboboxAnchor } from "@/components/ui/combobox"
 import { useActionState, useState } from "react"
-import { Item, ItemContent, ItemTitle } from "@/components/ui/item"
 import { signup } from "@/app/actions/auth"
 import { Spinner } from "@/components/ui/spinner"
+import React from "react"
 
 export default function SignupPage() {
 
     const [state, action, pending] = useActionState(signup, undefined)
-
     const [toggleRole, setToggleRole] = useState("poster")
     const [toggleBusiness, setToggleBusiness] = useState("individual")
     const [selectedNiches, setSelectedNiches] = useState<string[]>([])
     const niches = ["Градежништво", "Домашни работи", "Транспорт", "Дизајн и креативни услуги", "Техничка поддршка", "Настава и обука", "Здравство и нега", "Професионални услуги", "Разно  "];
-
-    const selectNiche = (niche: string) => {
-        if (selectedNiches.includes(niche) || niche === "") {
-            setSelectedNiches(selectedNiches.filter(n => n !== niche))
-        } else {
-            setSelectedNiches([...selectedNiches, niche])
-        }
-    }
+    const anchor = useComboboxAnchor()
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen">
@@ -76,7 +68,11 @@ export default function SignupPage() {
                             placeholder="Внесете лозинка"
                             name="password"
                         />
-                        {state?.errors?.password && <FieldError>{state.errors.password}</FieldError>}
+                        {state?.errors?.password && <>
+                            {state.errors.password.map((error, index) => (
+                                <FieldError key={index}>{error}</FieldError>
+                            ))}
+                        </>}
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="phone">Телефон</FieldLabel>
@@ -91,7 +87,7 @@ export default function SignupPage() {
                     <hr />
                     <Field>
                         <FieldLabel htmlFor="business">Тип на бизнис</FieldLabel>
-                        <Select name="business" onValueChange={setToggleBusiness} defaultValue={toggleBusiness}>
+                        <Select onValueChange={setToggleBusiness} defaultValue={toggleBusiness}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Одбери тип на бизнис" />
                             </SelectTrigger>
@@ -103,6 +99,7 @@ export default function SignupPage() {
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
+                        <input type="hidden" name="business" value={toggleBusiness} />
                         {state?.errors?.business && <FieldError>{state.errors.business}</FieldError>}
                     </Field>
                     {(toggleBusiness === "small_business" || toggleBusiness === "company") && <Field>
@@ -157,10 +154,26 @@ export default function SignupPage() {
                         </RadioGroup>
                     </Field>
                     {(toggleRole === "tasker" || toggleRole === "both") && <Field>
-                        <FieldLabel htmlFor="form-address">Ниши</FieldLabel>
-                        <Combobox items={niches} onInputValueChange={selectNiche}>
-                            <ComboboxInput placeholder="Избери минимум две ниши" />
-                            <ComboboxContent>
+                        <Combobox
+                            multiple
+                            autoHighlight
+                            items={niches}
+                            value={selectedNiches}
+                            onValueChange={setSelectedNiches}
+                            >
+                            <ComboboxChips ref={anchor} className="w-full">
+                                <ComboboxValue>
+                                {(selectedNiches) => (
+                                    <React.Fragment>
+                                    {selectedNiches.map((niche: string) => (
+                                        <ComboboxChip key={niche}>{niche}</ComboboxChip>
+                                    ))}
+                                    <ComboboxChipsInput />
+                                    </React.Fragment>
+                                )}
+                                </ComboboxValue>
+                            </ComboboxChips>
+                            <ComboboxContent anchor={anchor}>
                                 <ComboboxEmpty>Не се пронајдени ниши.</ComboboxEmpty>
                                 <ComboboxList>
                                 {(item) => (
@@ -171,15 +184,7 @@ export default function SignupPage() {
                                 </ComboboxList>
                             </ComboboxContent>
                         </Combobox>
-                        {selectedNiches.map(niche => (
-                            <Item variant="outline" key={niche}>
-                                <ItemContent>
-                                    <ItemTitle>{niche}</ItemTitle>
-                                </ItemContent>
-                            </Item>
-                        ))}
-                        {state?.errors?.niches && <FieldError>{state.errors.niches}</FieldError>}
-                        <input type="hidden" name="niches" value={JSON.stringify(selectedNiches)} />
+                        <input type="hidden" name="niches" value={selectedNiches} />
                     </Field>}
                     <hr />
                     <Field orientation="horizontal">
@@ -194,7 +199,7 @@ export default function SignupPage() {
                             </> }
                             {!pending && <span>Регистрирај се</span>} 
                         </Button>
-                        {/* {state?.message && <FieldError>{state.message}</FieldError>} */}
+                        {state?.message && <FieldError>{state.message}</FieldError>}
                     </Field>
                 </FieldGroup>
             </form>
