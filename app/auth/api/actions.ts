@@ -1,9 +1,9 @@
 'use server'
 
-import { LoginFormSchema, LoginFormState, SignupFormSchema, SignupFormState } from '@/lib/definitions'
-import { createSession, deleteSession } from '@/lib/session'
-import { redirect } from 'next/navigation';
-import { getUser } from '@/lib/api/user';
+import { redirect } from "next/navigation";
+import { LoginFormSchema, LoginFormState, SignupFormSchema, SignupFormState } from "./definitions";
+import { createSession, deleteSession } from "./session";
+import { getUser } from "./user";
 
 export async function login(state: LoginFormState, formData: FormData) {
     const validatedFields = LoginFormSchema.safeParse({
@@ -24,14 +24,14 @@ export async function login(state: LoginFormState, formData: FormData) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
     });
-    
-    const data = await xanoResponse.json();
 
     if (!xanoResponse.ok) {
         return {
             message: 'Невалиден email или лозинка!',
         }
     }
+    
+    const data = await xanoResponse.json();
 
     await createSession(data.authToken);
     const user = await getUser(data.authToken);
@@ -44,58 +44,29 @@ export async function login(state: LoginFormState, formData: FormData) {
 }
 
 export async function signup(state: SignupFormState, formData: FormData) {
-    console.log('Form data received in server action:', formData);
+    // console.log('Form data received in server action:', formData);
 
     const validatedFields = SignupFormSchema.safeParse({
         name: formData.get('name'),
         email: formData.get('email'),
         password: formData.get('password'),
-        phone: formData.get('phone'),
-        business: formData.get('business'),
-        role: formData.get('role'),
-        company_name: formData.get('company_name') || '',
-        niches: JSON.parse(formData.get('niches') as string)
+        role: formData.get('role')
     });
 
     if (!validatedFields.success) {
+        console.log(validatedFields.success)
         return {
             errors: validatedFields.error.flatten().fieldErrors,
         }
     }
 
-    console.log('Validated fields:', validatedFields.data);
-
-    const { name, email, password, phone, business, role, company_name, niches } = validatedFields.data;
-
-    console.log(JSON.stringify({ 
-            name, 
-            email, 
-            password,
-            phone,
-            business,
-            role,
-            company_name,
-            niches
-        }))
+    const { name, email, password, role } = validatedFields.data;
 
     const xanoResponse = await fetch(`${process.env.XANO_BASE_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            name, 
-            email, 
-            password,
-            phone,
-            business,
-            role,
-            company_name,
-            niches
-        }),
+        body: JSON.stringify({ name, email, password, role })
     });
-
-    console.log(xanoResponse)
-
-    const data = await xanoResponse.json();
 
     if (!xanoResponse.ok) {
         return {
@@ -103,13 +74,11 @@ export async function signup(state: SignupFormState, formData: FormData) {
         }
     }
 
+    const data = await xanoResponse.json();
+
     await createSession(data.authToken);
 
-    if(role === 'both') {
-        redirect('/welcome');
-    } else {
-        redirect(`/${role}/dashboard`);
-    }
+    redirect('/profile/create')
 }
 
 export async function logout() {

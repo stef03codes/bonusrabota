@@ -1,13 +1,13 @@
 'use client';
 
-import { useActionState } from 'react';
-import { logout } from '../actions/auth';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
+import { useActionState } from 'react';
+import { logout } from '../api/actions';
 
 export function LogoutButton() {
 
-  const [state, action, pending] = useActionState(logout, undefined)
+  const [state, action, pending] = useActionState(logout, undefined);
 
   return (
     <>
@@ -20,7 +20,6 @@ export function LogoutButton() {
             {!pending && <span>Одјави се</span>} 
         </Button>
       </form>
-      {/* {state?.errors.message && <p className="text-red-500">{state.errors.message}</p>} */}
     </>
   );
 }

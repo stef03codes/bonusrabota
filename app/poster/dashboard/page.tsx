@@ -1,5 +1,5 @@
-import { LogoutButton } from "@/app/components/LogoutButton";
-import { getUserRole } from "@/lib/api/user";
+import { LogoutButton } from "@/app/auth/components/LogoutButton";
+import { getUserRole } from "@/app/auth/api/user";
 import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
