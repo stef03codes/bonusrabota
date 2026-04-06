@@ -1,20 +1,13 @@
 import { LogoutButton } from "@/app/auth/components/LogoutButton";
-import { getUserRole } from "@/app/auth/api/user";
-import { redirect } from "next/navigation";
+import {getUserFromSession, User} from "@/app/auth/api/user";
 
 export default async function Dashboard() {
 
-    const role = await getUserRole();
-
-    if (!role) {
-        redirect('/login');
-    } else if(role === 'poster') {
-        redirect('/permission-error');
-    }
+    const user: User = await getUserFromSession();
 
     return (
         <main>
-            <h1>Tasker Dashboard</h1>
+            <h1>Tasker Dashboard - Welcome {user.name}</h1>
             <LogoutButton/>
         </main>
     );

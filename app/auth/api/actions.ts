@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { LoginFormSchema, LoginFormState, SignupFormSchema, SignupFormState } from "./definitions";
 import { createSession, deleteSession } from "./session";
-import { getUser } from "./user";
+import {getUserFromApi, User} from "./user";
 
 export async function login(state: LoginFormState, formData: FormData) {
     const validatedFields = LoginFormSchema.safeParse({
@@ -19,7 +19,7 @@ export async function login(state: LoginFormState, formData: FormData) {
 
     const { email, password } = validatedFields.data;
 
-    const xanoResponse = await fetch(`${process.env.XANO_BASE_URL}/auth/login`, {
+    const xanoResponse = await fetch(`${process.env.XANO_BASE_URL}/api:QqYQmNog/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -33,14 +33,10 @@ export async function login(state: LoginFormState, formData: FormData) {
     
     const data = await xanoResponse.json();
 
-    await createSession(data.authToken);
-    const user = await getUser(data.authToken);
+    const user: User = await getUserFromApi(data.authToken);
+    await createSession(data.authToken, JSON.stringify(user));
 
-    if(user.role === 'both') {
-        redirect('/welcome');
-    } else {
-        redirect(`/${user.role}/dashboard`);
-    }
+    redirect(`/${user.role}/dashboard`);
 }
 
 export async function signup(state: SignupFormState, formData: FormData) {
@@ -62,7 +58,7 @@ export async function signup(state: SignupFormState, formData: FormData) {
 
     const { name, email, password, role } = validatedFields.data;
 
-    const xanoResponse = await fetch(`${process.env.XANO_BASE_URL}/auth/signup`, {
+    const xanoResponse = await fetch(`${process.env.XANO_BASE_URL}/api:QqYQmNog/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, role })
@@ -76,12 +72,13 @@ export async function signup(state: SignupFormState, formData: FormData) {
 
     const data = await xanoResponse.json();
 
-    await createSession(data.authToken);
+    const user: User = await getUserFromApi(data.authToken);
+    await createSession(data.authToken, JSON.stringify(user));
 
-    redirect('/profile/create')
+    redirect('/profile/create');
 }
 
 export async function logout() {
     await deleteSession();
-    redirect('/login');
+    redirect('/auth');
 }

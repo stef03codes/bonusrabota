@@ -1,4 +1,5 @@
 import * as z from 'zod'
+import {User} from "@/app/auth/api/user";
 
 // Schemas
 export const SignupFormSchema = z.object({
@@ -18,8 +19,9 @@ export const SignupFormSchema = z.object({
     })
     .trim(),
     role: z
-      .string({error: 'Задолжително изберете улога!'})
-      .trim()
+      .string()
+        .min(1, {error: 'Задолжително изберете улога!'})
+        .trim()
 })
 
 export const LoginFormSchema = z.object({
@@ -35,6 +37,7 @@ export type LoginFormState =
         email?: string[]
         password?: string[]
       }
+      user?: User
       message?: string
     }
   | undefined
@@ -54,9 +57,7 @@ export type LogoutState = | { errors?: { message: string } } | undefined
 
 // Interfaces
 export interface LoginFormProps {
-  state: LoginFormState;
-  action: (payload: FormData) => void; 
-  pending: boolean;
+  submit: void;
 }
 
 export interface SignupFormProps {

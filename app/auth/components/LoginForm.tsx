@@ -4,7 +4,6 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { LoginFormProps } from "../api/definitions"
 import { login } from "../api/actions";
 import { useActionState } from "react"
 
@@ -22,6 +21,7 @@ export default function LoginForm() {
                         type="email"
                         name="email"
                         placeholder="name@example.com"
+                        className='bg-white'
                     />
                     {state?.errors?.email && <FieldError>{state.errors.email}</FieldError>}
                 </Field>
@@ -32,6 +32,7 @@ export default function LoginForm() {
                         type="password"
                         name="password"
                         placeholder="Внесете лозинка..."
+                        className='bg-white'
                     />
                     {state?.errors?.password && <FieldError>{state.errors.password}</FieldError>}
                 </Field>

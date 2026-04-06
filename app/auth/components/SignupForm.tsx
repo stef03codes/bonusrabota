@@ -23,6 +23,7 @@ export default function SignupForm() {
                         type="text"
                         placeholder="Внесете име"
                         name="name"
+                        className='bg-white'
                     />
                     {state?.errors?.name && <FieldError>{state.errors.name}</FieldError>}
                 </Field>
@@ -33,6 +34,7 @@ export default function SignupForm() {
                         type="email"
                         name="email"
                         placeholder="name@example.com"
+                        className='bg-white'
                     />
                     {state?.errors?.email && <FieldError>{state.errors.email}</FieldError>}
                 </Field>
@@ -43,27 +45,11 @@ export default function SignupForm() {
                         type="password"
                         name="password"
                         placeholder="Внесете лозинка..."
+                        className='bg-white'
                     />
                     {state?.errors?.password && state.errors.password.map(error => (
                         <FieldError key={error}>{error}</FieldError>
                     ))}
-                </Field>
-                <Field>
-                    <FieldLabel htmlFor="business">Улога</FieldLabel>
-                    <Select onValueChange={setRole}>
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Одбери улога" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="poster">Постер</SelectItem>
-                                <SelectItem value="tasker">Таскер</SelectItem>
-                                <SelectItem value="both">Двете улоги</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <input type="hidden" name="role" value={role} />
-                    {state?.errors?.role && <FieldError>{state.errors.role}</FieldError>}
                 </Field>
                 <Field>
                     <Button
